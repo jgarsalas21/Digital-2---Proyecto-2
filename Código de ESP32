@@ -1,0 +1,36 @@
+/****************************************************            LIBRERÍAS        *********************************************************************************/
+
+#include <Arduino.h>
+#include <ESP32SPISlave.h>
+
+/****************************************************            VARIABLES        *********************************************************************************/
+
+char cmd_LED;        //Array para enviar valores de que LED encender a través de SPI
+char cmd_TIMEs;      //Array para enviar valores de tiempo de encendido de la LED a través de SPI
+/****************************************************              PINES          *********************************************************************************/
+
+#define LED1 13  //LED roja
+#define LED2 12  //LED naranja
+#define LED3 14  //LED verde
+
+#define Pot 34   //Lectura del potenciometro
+
+/***************************************************              SETUP           *********************************************************************************/
+
+void setup() {
+  // put your setup code here, to run once:
+  int result = myFunction(2, 3);
+}
+
+/***************************************************              LOOP              *******************************************************************************/
+
+void loop() {
+  // put your main code here, to run repeatedly:
+}
+
+/***************************************************              SETUP             *******************************************************************************/
+
+// put function definitions here:
+int myFunction(int x, int y) {
+  return x + y;
+}
