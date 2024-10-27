@@ -7,6 +7,16 @@
 
 char cmd_LED;        //Array para enviar valores de que LED encender a través de SPI
 char cmd_TIMEs;      //Array para enviar valores de tiempo de encendido de la LED a través de SPI
+
+ESP32SPISlave slave; 
+
+static constexpr uint32_t BUFFER_SIZE {32};                  //Tamaño de los datos
+uint8_t spi_slave_tx_buffer_LED [BUFFER_SIZE];               //Para LEDs
+uint8_t spi_slave_rx_buffer_LED [BUFFER_SIZE];
+
+uint8_t spi_slave_tx_buffer_TIME [BUFFER_SIZE];               //Para tiempo
+uint8_t spi_slave_rx_buffer_TIME [BUFFER_SIZE];
+
 /****************************************************              PINES          *********************************************************************************/
 
 #define LED1 13  //LED roja
@@ -15,20 +25,70 @@ char cmd_TIMEs;      //Array para enviar valores de tiempo de encendido de la LE
 
 #define Pot 34   //Lectura del potenciometro
 
+/***************************************************       DECLARACION DE FUNCIONES     *********************************************************************************/
+
+//declaracion de funciones
+
 /***************************************************              SETUP           *********************************************************************************/
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(115200);
+  delay(2000);
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+
+  slave.setDataMode(SPI_MODE0);
+  slave.setQueueSize(1);
+  slave.begin(VSPI);                                                               //Chip select: 5, CLK: 18, MOSI: 23, MISO: 19
+
+  memset(spi_slave_tx_buffer_LED, 0, BUFFER_SIZE);
+  memset(spi_slave_rx_buffer_LED, 0, BUFFER_SIZE);
 }
 
 /***************************************************              LOOP              *******************************************************************************/
 
 void loop() {
-  // put your main code here, to run repeatedly:
+
+  slave.wait(spi_slave_rx_buffer_LED, spi_slave_tx_buffer_LED, BUFFER_SIZE);               //Para que espere haste recibir ordenes del maestro
+
+  while (slave.available())
+  {//A1
+    Serial.print("Comando recibido");
+    Serial.println(spi_slave_rx_buffer_LED[0]);
+    cmd_LED = spi_slave_rx_buffer_LED[0];
+    slave.pop();
+
+    if (cmd_LED == 1)
+    {//B1
+      digitalWrite(LED1, HIGH);
+      delay(1000); //cambiar al tiempo recibido
+      digitalWrite(LED1, LOW);
+    }//b1
+
+    if (cmd_LED == 2)
+    {//B2
+      digitalWrite(LED2, HIGH);
+      delay(1000); //cambiar al tiempo recibido
+      digitalWrite(LED2, LOW);
+    }//b2
+    
+    if (cmd_LED == 3)
+    {//B3
+      digitalWrite(LED3, HIGH);
+      delay(1000); //cambiar al tiempo recibido
+      digitalWrite(LED3, LOW);
+    }//b3
+
+    else {//B4
+      Serial.print("Esta LED no existe");
+    }//b4
+    
+  }//a1
+  
 }
 
-/***************************************************              SETUP             *******************************************************************************/
+/***************************************************              FUNCIONES             *******************************************************************************/
 
 // put function definitions here:
 int myFunction(int x, int y) {
