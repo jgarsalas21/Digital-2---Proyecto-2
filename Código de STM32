@@ -31,6 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define deviceAddress 0x55
 
 /* USER CODE END PD */
 
@@ -47,7 +48,18 @@ SPI_HandleTypeDef hspi3;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+uint8_t buffer;
+uint8_t TX_Buffer[] = "S";
+uint8_t RX_Buffer[1];
+char TIMEs[4];
 
+char LEDno[6];
+
+char OpcionElegida[1];         // Define un array para recibir 1 carácter + terminador nulo
+
+const char *Menu = "Elija una opcion \n \r1. Encender LEDs \n \r2. Leer potenciometro \n \r";
+const char *WrongStatement = "Elija un valor apropiado e intente de nuevo";
+const char *feedback = "\n \r";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -105,78 +117,77 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-      const char *Menu = "Elija una opcion \n \r1. Encender LEDs \n \r2. Leer potenciometro \n \r";
-      const char *WrongStatement = "Elija un valor apropiado e intente de nuevo";
-      const char *feedback = "Funciona";
+
 
       HAL_UART_Transmit(&huart2, (uint8_t*)Menu, strlen(Menu), HAL_MAX_DELAY);
       HAL_UART_Transmit(&huart2, (uint8_t*)feedback, strlen(feedback), HAL_MAX_DELAY);
 
-      char OpcionElegida[2];  // Define un array para recibir 1 carácter + terminador nulo
       HAL_UART_Receive(&huart2, (uint8_t*)OpcionElegida, 1, HAL_MAX_DELAY);
-      OpcionElegida[1] = '\0'; // Añade terminador nulo
 
-      if (OpcionElegida[0] == '1'){ // Compara el primer carácter ingresado
-        const char *InstLED_LED = "Ingrese la LED que quiere encender";
-        char LEDno[2];
+      if (OpcionElegida[0] == '1'){ // Compara el primer caracter ingresado
+        const char *InstLED_LED = "Ingrese la LED y el tiempo (1,5000)";
+
         HAL_UART_Transmit(&huart2, (uint8_t*)InstLED_LED, strlen(InstLED_LED), HAL_MAX_DELAY);
-        HAL_UART_Receive(&huart2, (uint8_t*)LEDno, 1, HAL_MAX_DELAY);
-        LEDno[1] = '\0';
+        HAL_UART_Receive(&huart2, (uint8_t*)LEDno, sizeof(LEDno), HAL_MAX_DELAY);
 
         const char *InstLED_TIME = "Ingrese el tiempo que quiere que se encienda en milisegundos";
-        char TIMEs[10]; // Suficiente para almacenar el tiempo como string
-        HAL_UART_Transmit(&huart2, (uint8_t*)InstLED_TIME, strlen(InstLED_TIME), HAL_MAX_DELAY);
-        HAL_UART_Receive(&huart2, (uint8_t*)TIMEs, sizeof(TIMEs) - 1, HAL_MAX_DELAY);
+         // Suficiente para almacenar el tiempo como string
+       // HAL_UART_Transmit(&huart2, (uint8_t*)InstLED_TIME, strlen(InstLED_TIME), HAL_MAX_DELAY);
+        HAL_Delay(1000);
+       // HAL_UART_Receive(&huart2, (uint8_t*)TIMEs, strlen(TIMEs), HAL_MAX_DELAY);
+
+       // HAL_Delay(3000);
+
+        HAL_GPIO_WritePin (ESP32_CS_GPIO_Port, ESP32_CS_Pin, GPIO_PIN_RESET);                         //Inicia la comunicacion SPI
+        HAL_SPI_Transmit (&hspi3, (uint8_t*) LEDno, strlen(LEDno), HAL_MAX_DELAY);                             //Envio el dato de la LED y el timepo en un mismoa array
+        HAL_GPIO_WritePin (ESP32_CS_GPIO_Port, ESP32_CS_Pin, GPIO_PIN_SET);                           //Finaliza la comunicacion SPI
 
         if (LEDno[0] == '1') {
           // Encender LED 1 en ESP32
-        	const char *LED1on = "LED 1 encendida";
-        	HAL_GPIO_WritePin (ESP32_CS_GPIO_Port, ESP32_CS_Pin, GPIO_PIN_RESET);                         //Inicia la comunicacion SPI
-        	HAL_SPI_Transmit (&hspi3, (uint8_t*) LEDno, 1, HAL_MAX_DELAY);                                //Envio el dato de la LED
-        	HAL_SPI_Transmit (&hspi3, (uint8_t*) TIMEs, sizeof(TIMEs), HAL_MAX_DELAY);                    //Envio el dato del tiempo de encendido
+        	const char *LED1on = "LED 1 encendida?";
         	HAL_UART_Transmit (&huart2, (uint8_t*) LED1on, strlen(LED1on), HAL_MAX_DELAY);                //Feedback de que la led se ha encendido
-
-        	HAL_GPIO_WritePin (ESP32_CS_GPIO_Port, ESP32_CS_Pin, GPIO_PIN_SET);                           //Termina la comunicacion SPI
-
         	HAL_Delay(500);
         }
         else if (LEDno[0] == '2') {
           // Encender LED 2 en ESP32
-        	const char *LED2on = "LED 2 encendida";
-        	HAL_GPIO_WritePin (ESP32_CS_GPIO_Port, ESP32_CS_Pin, GPIO_PIN_RESET);                         //Inicia la comunicacion SPI
-        	HAL_SPI_Transmit (&hspi3, (uint8_t*) LEDno, 1, HAL_MAX_DELAY);                                //Envio el dato de la LED
-        	HAL_SPI_Transmit (&hspi3, (uint8_t*) TIMEs, sizeof(TIMEs), HAL_MAX_DELAY);                    //Envio el dato del tiempo de encendido
+        	const char *LED2on = "LED 2 encendida?";
         	HAL_UART_Transmit (&huart2, (uint8_t*) LED2on, strlen(LED2on), HAL_MAX_DELAY);                //Feedback de que la led se ha encendido
-
-        	HAL_GPIO_WritePin (ESP32_CS_GPIO_Port, ESP32_CS_Pin, GPIO_PIN_SET);                           //Termina la comunicacion SPI
-
         	HAL_Delay(500);
         }
         else if (LEDno[0] == '3') {
           // Encender LED 3 en ESP32
-        	const char *LED3on = "LED  encendida";
-        	HAL_GPIO_WritePin (ESP32_CS_GPIO_Port, ESP32_CS_Pin, GPIO_PIN_RESET);                         //Inicia la comunicacion SPI
-        	HAL_SPI_Transmit (&hspi3, (uint8_t*) LEDno, 1, HAL_MAX_DELAY);                                //Envio el dato de la LED
-        	HAL_SPI_Transmit (&hspi3, (uint8_t*) TIMEs, sizeof(TIMEs), HAL_MAX_DELAY);                    //Envio el dato del tiempo de encendido
+        	const char *LED3on = "LED 3 encendida?";
         	HAL_UART_Transmit (&huart2, (uint8_t*) LED3on, strlen(LED3on), HAL_MAX_DELAY);                //Feedback de que la led se ha encendido
-
-        	HAL_GPIO_WritePin (ESP32_CS_GPIO_Port, ESP32_CS_Pin, GPIO_PIN_SET);                           //Termina la comunicacion SPI
-
         	HAL_Delay(500);
         }
         else {
           HAL_UART_Transmit(&huart2, (uint8_t*)WrongStatement, strlen(WrongStatement), HAL_MAX_DELAY);
-
           HAL_Delay(500);
         }
       }
-      else if (OpcionElegida[0] == '2') {
+      else if (OpcionElegida[0] == '2') {                                                                     //Lectura del potenciometro
         // Leer potenciómetro con I2C
-        char Pot[] = "5"; // Simulación de valor del potenciómetro
+        char Pot[] = "Leyendo potenciometro... \n \r"; // Simulación de valor del potenciómetro
         HAL_UART_Transmit(&huart2, (uint8_t*)Pot, strlen(Pot), HAL_MAX_DELAY);
+
+        TX_Buffer[0] = '0';                                                                                   //Este es necesario???
+        HAL_I2C_Master_Transmit (&hi2c1, (deviceAddress << 1)|0x00, TX_Buffer, sizeof(TX_Buffer), HAL_MAX_DELAY);
+        HAL_Delay(1000);
+
+        TX_Buffer[0] = 'S';                                                                                   //Señal de leer potenciometro
+        HAL_I2C_Master_Transmit (&hi2c1, (deviceAddress << 1)|0x00, TX_Buffer, 1, HAL_MAX_DELAY);
+        HAL_Delay(1000);
+
+        HAL_I2C_Master_Receive (&hi2c1, (deviceAddress << 1)|0x01, (uint8_t*) RX_Buffer, 1, HAL_MAX_DELAY);   //Recibo el valor del pot
+
+        HAL_UART_Transmit (&huart2, RX_Buffer, 1, 1000);
+        HAL_Delay(500);
+
+
       }
       else {
         HAL_UART_Transmit(&huart2, (uint8_t*)WrongStatement, strlen(WrongStatement), HAL_MAX_DELAY);
+       // HAL_UART_transmit(&huart2, (uint8_t*)feedback, strlen(feedback), HAL_MAX_DELAY);
       }
 
       HAL_Delay(1000);
