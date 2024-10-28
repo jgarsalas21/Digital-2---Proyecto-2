@@ -11,11 +11,12 @@ char cmd_TIMEs;      //Array para enviar valores de tiempo de encendido de la LE
 ESP32SPISlave slave; 
 
 static constexpr uint32_t BUFFER_SIZE {32};                  //Tamaño de los datos
+
 uint8_t spi_slave_tx_buffer_LED [BUFFER_SIZE];               //Para LEDs
 uint8_t spi_slave_rx_buffer_LED [BUFFER_SIZE];
 
-uint8_t spi_slave_tx_buffer_TIME [BUFFER_SIZE];               //Para tiempo
-uint8_t spi_slave_rx_buffer_TIME [BUFFER_SIZE];
+uint8_t spi_slave_tx_buffer_TIMEs [BUFFER_SIZE];             //Para tiempo
+uint8_t spi_slave_rx_buffer_TIMEs [BUFFER_SIZE];
 
 /****************************************************              PINES          *********************************************************************************/
 
@@ -44,6 +45,8 @@ void setup() {
 
   memset(spi_slave_tx_buffer_LED, 0, BUFFER_SIZE);
   memset(spi_slave_rx_buffer_LED, 0, BUFFER_SIZE);
+  memset(spi_slave_tx_buffer_TIMEs, 0, BUFFER_SIZE);
+  memset(spi_slave_rx_buffer_TIMEs, 0, BUFFER_SIZE);
 }
 
 /***************************************************              LOOP              *******************************************************************************/
@@ -57,31 +60,44 @@ void loop() {
     Serial.print("Comando recibido");
     Serial.println(spi_slave_rx_buffer_LED[0]);
     cmd_LED = spi_slave_rx_buffer_LED[0];
+    cmd_TIMEs = spi_slave_rx_buffer_TIMEs[0];
     slave.pop();
 
     if (cmd_LED == 1)
     {//B1
       digitalWrite(LED1, HIGH);
-      delay(1000); //cambiar al tiempo recibido
+      delay(cmd_TIMEs);
       digitalWrite(LED1, LOW);
+
+      cmd_LED = 0;                                                                         //Reseteo las variables
+      cmd_TIMEs = 0;
     }//b1
 
     if (cmd_LED == 2)
     {//B2
       digitalWrite(LED2, HIGH);
-      delay(1000); //cambiar al tiempo recibido
+      delay(cmd_TIMEs);
       digitalWrite(LED2, LOW);
+
+      cmd_LED = 0;                                                                         //Reseteo las variables
+      cmd_TIMEs = 0;
     }//b2
     
     if (cmd_LED == 3)
     {//B3
       digitalWrite(LED3, HIGH);
-      delay(1000); //cambiar al tiempo recibido
+      delay(cmd_TIMEs);
       digitalWrite(LED3, LOW);
+
+      cmd_LED = 0;                                                                         //Reseteo las variables
+      cmd_TIMEs = 0;
     }//b3
 
     else {//B4
       Serial.print("Esta LED no existe");
+
+      cmd_LED = 0;                                                                         //Reseteo las variables
+      cmd_TIMEs = 0;
     }//b4
     
   }//a1
@@ -91,6 +107,6 @@ void loop() {
 /***************************************************              FUNCIONES             *******************************************************************************/
 
 // put function definitions here:
-int myFunction(int x, int y) {
+/*int myFunction(int x, int y) {
   return x + y;
-}
+}*/
