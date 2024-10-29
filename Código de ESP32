@@ -21,6 +21,7 @@ uint8_t spi_slave_rx_buffer_TIMEs [BUFFER_SIZE];
 
 //I2C
 int mv = 0;
+int mVp = 0;
 
 /****************************************************              PINES          *********************************************************************************/
 
@@ -184,24 +185,29 @@ void loop() {
 /***************************************************              FUNCIONES             *******************************************************************************/
 
 void onRequest(){
-  uint8_t potval = mv;
-  Wire.print(potval);
+  Wire.print(mVp);
   Serial.println("onRequest");
+  Serial.print("mVp: ");
+  Serial.println(mVp);
   Serial.println("");
 }
 
 void onReceive(int len){
   //    Serial.printf("onReceive[%d]: " len);
+  //Serial.println("45");
   while(Wire.available()){
 
     uint8_t incomingByte = Wire.read();
-    Serial.write(incomingByte);
+    Serial.println(incomingByte);
+    Serial.println("Fuck");
 
     if (incomingByte == 'S')
     {
-      mv = analogReadMilliVolts(Pot);
+      mv = analogRead(Pot);
+      mVp = map(mv, 0, 4095, 0, 255);
+      Serial.print("mv: ");
       Serial.println(mv);
+      Wire.print(mv);
     }
-  }
-  
+  } 
 }
